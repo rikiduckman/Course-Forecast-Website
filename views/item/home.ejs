@@ -1,0 +1,62 @@
+<div class="container-home">
+  <div class="logo-container-home mt-5">
+      <img src="logo/Logo.png" alt="โลโก้" class="logo-home img-fluid">
+  </div>
+  <div class="content-title-home my-4">
+      ระบบแนะนำการเลือกศึกษาหลักสูตรระดับปริญญาตรีสาขาวิชาวิทยาการคอมพิวเตอร์ ด้วยเทคนิคโครงข่ายประสาทเทียม
+      <br> 
+      ภาควิชาคณิตศาสตร์เเละวิทยาการคอมพิวเตอร์
+  </div>
+  <div class="container-login-home">
+      <a href="/auth/google" class="btn btn-primary login-button-home">กรุณาเข้าสู่ระบบ</a>
+      <div class="note-home mt-3">
+          หมายเหตุ: ใช้อีเมลจากมหาวิทยาลัยเทคโนโลยีราชมงคลกรุงเทพเท่านั้น
+      </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const invalidEmail = urlParams.get('invalidEmail');
+  const unauthorized = urlParams.get('unauthorized');
+  const notLoggedIn = urlParams.get('notLoggedIn');
+
+  if (invalidEmail) {
+    Swal.fire({
+      icon: 'error',
+      title: 'เข้าสูระบบไม่สำเร็จ',
+      text: 'กรุณาใช้เมลของมหาวิทยาลัยเทคโนโลยีราชมงคลกรุงเทพเท่านั้น',
+      confirmButtonText: 'ตกลง'
+    }).then(() => {
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    });
+  }
+
+  if (unauthorized) {
+    Swal.fire({
+      icon: 'error',
+      title: 'การเข้าถึงถูกปฏิเสธ',
+      text: 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้',
+      confirmButtonText: 'ตกลง'
+    }).then(() => {
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    });
+  }
+
+  if (notLoggedIn) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'ยังไม่ได้เข้าสู่ระบบ',
+      text: 'กรุณาเข้าสู่ระบบก่อนเข้าถึงหน้านี้',
+      confirmButtonText: 'ตกลง'
+    }).then(() => {
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    });
+  }
+});
+</script>

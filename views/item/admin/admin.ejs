@@ -1,0 +1,137 @@
+<style>
+  body {
+    font-family: "Itim", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f1f1f1;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  h3 {
+    color: #343a40;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .list-group-item {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+
+  .list-group-item a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 18px;
+  }
+
+  .list-group-item:hover {
+    background-color: #e9ecef;
+  }
+
+  .col.text-right {
+    text-align: right;
+    margin-top: 20px;
+  }
+
+</style>
+<div class="container">
+  <h3>จัดการข้อมูลและโมเดลสำหรับพยากรณ์</h3>
+  <ul class="list-group">
+    <li class="list-group-item">
+      <a href="/admin/managemodel">จัดการข้อมูลโมเดล</a>
+    </li>
+    <li class="list-group-item">
+      <a href="/admin/managedata">จัดการข้อมูลนักศึกษา</a>
+    </li>
+  </ul>
+  <div class="col text-right">
+    <a href="#" class="btn btn-danger" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i>ออกจากระบบ</a>
+  </div>
+</div>
+
+<div class="modal fade" id="logoutConfirmationModal" tabindex="-1" role="dialog"
+  aria-labelledby="logoutConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="logoutConfirmationModalLabel">ยืนยันการออกจากระบบ</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <a href="/logout" class="btn btn-danger" id="logoutButton">Logout</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  $(document).ready(function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const loginSuccess = urlParams.get('login');
+    const unauthorized = urlParams.get('unauthorized');
+
+    if (loginSuccess === 'success') {
+      Swal.fire({
+        title: "เข้าสู่ระบบสำเร็จ",
+        text: "ยินดีต้อนรับเข้าสู่หน้าเเอดมิน",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false
+      }).then(() => {
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      });
+    }
+
+    if (unauthorized === 'true') {
+      Swal.fire({
+        title: "การเข้าถึงถูกปฏิเสธ",
+        text: "คุณไม่มีสิทธิ์เข้าถึงหน้านี้",
+        icon: "error",
+        confirmButtonText: "ตกลง"
+      }).then(() => {
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      });
+    }
+  });
+
+  $("#logoutButton").on("click", function (event) {
+    event.preventDefault();
+    Swal.fire({
+      title: "ยืนยันการออกจากระบบ",
+      text: "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "Red",
+      cancelButtonColor: "Gray",
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = "/logout";
+      }
+    });
+  });
+</script>

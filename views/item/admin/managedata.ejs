@@ -1,0 +1,376 @@
+<div class="container mt-5">
+  <button
+    onclick="window.location.href='/admin';"
+    class="btn btn-sm btn-dark float-right"
+  >
+    <i class="fa-solid fa-backward"></i>ย้อนกลับ
+  </button>
+
+  <h3 class="mb-4">จัดการข้อมูลนักศึกษา</h3>
+  <hr />
+
+  <form
+    action="/upload-csv"
+    method="post"
+    enctype="multipart/form-data"
+    id="uploadForm"
+  >
+    <div class="form-row align-items-center">
+      <div class="col-auto">
+        <div class="custom-file">
+          <input
+            type="file"
+            class="custom-file-input"
+            id="fileInput"
+            name="file"
+            accept=".csv"
+            required
+            onchange="updateFileNameLabel(); showPreview();"
+          />
+          <label class="custom-file-label" for="fileInput" id="fileLabel"
+            >เลือกไฟล์...</label
+          >
+        </div>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-upload"></i>อัปโหลด
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary ml-2"
+          onclick="resetForm()"
+        >
+          <i class="fa-solid fa-repeat"></i>ล้าง
+        </button>
+      </div>
+    </div>
+    <hr />
+  </form>
+
+  <div id="previewSection" style="display: none;">
+    <h5 class="mt-5">แสดงข้อมูล</h5>
+    <hr />
+
+    <div class="table-wrapper" style="overflow-x: auto;">
+      <table class="table table-bordered table-hover">
+        <thead class="sticky-header">
+          <tr id="csvHeader"></tr>
+        </thead>
+        <tbody id="csvBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <% if (uploadedFiles.length > 0) { %>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">ข้อมูลที่ถูกอัปโหลด</h5>
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead class="thead-light">
+            <tr>
+              <th>ชื่อไฟล์</th>
+              <th>วันที่/เวลา</th>
+              <th>การกระทำ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% uploadedFiles.forEach(file => { %>
+            <tr id="row-<%= file.filename %>">
+              <td><%= file.filename %></td>
+              <td>
+                <%= moment(file.uploadedAt).format('D/M/YYYY HH:mm:ss') %>
+              </td>
+              <td>
+                <a
+                  href="/preview/<%= file.filename %>"
+                  class="btn btn-sm btn-info"
+                  ><i class="fa-solid fa-eye"></i>แสดง</a
+                >
+                <a
+                  href="javascript:void(0);"
+                  class="btn btn-sm btn-warning"
+                  onclick="openEditModal('<%= file.filename %>')"
+                  ><i class="fa-solid fa-pen-to-square"></i>ปรับปรุง</a
+                >
+                <a
+                  href="#"
+                  class="btn btn-sm btn-danger"
+                  onclick="deleteFile('<%= file.filename %>'); return false;"
+                  ><i class="fa-solid fa-trash"></i>ลบ</a
+                >
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <% } else { %>
+  <p>ไม่พบข้อมูล...</p>
+  <% } %>
+
+  <div
+    id="alert"
+    class="alert alert-success mt-3"
+    role="alert"
+    style="display: none"
+  ></div>
+</div>
+
+<div class="modal" id="editModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ปรับปรุงชื่อไฟล์</h5>
+        <button
+          type="button"
+          class="close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm" method="post">
+          <div class="form-group">
+            <label for="newFilename">ชื่อใหม่</label>
+            <input
+              type="text"
+              class="form-control"
+              id="newFilename"
+              name="newFilename"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">บันทึก</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  document.getElementById("uploadForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+
+    fetch("/upload-csv", {
+      method: "POST",
+      body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: result.message,
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          window.location.href = '/admin/managedata';
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: result.message,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาดในการอัปโหลดไฟล์',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    });
+  });
+
+  function updateFileNameLabel() {
+    const input = document.getElementById("fileInput");
+    const label = document.getElementById("fileLabel");
+    label.textContent = input.files[0] ? input.files[0].name : "เลือกไฟล์...";
+  }
+
+  function resetForm() {
+    document.getElementById("uploadForm").reset();
+    document.getElementById("csvHeader").innerHTML = "";
+    document.getElementById("csvBody").innerHTML = "";
+
+    // Clear file input and reset label
+    const fileInput = document.getElementById("fileInput");
+    const fileLabel = document.getElementById("fileLabel");
+    fileInput.value = ""; // Clear the file input
+    fileLabel.textContent = "เลือกไฟล์..."; // Reset label text
+
+    // Hide preview section
+    document.getElementById("previewSection").style.display = "none";
+  }
+
+  function deleteFile(filename) {
+    Swal.fire({
+    title: `คุณแน่ใจหรือไม่ว่าต้องการลบ <br><span style="color: red;">${filename}</span> ?</br>`,
+    text: "คุณจะไม่สามารถกู้คืนไฟล์นี้ได้!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: 'red',
+    cancelButtonColor: 'gray',
+    confirmButtonText: 'ใช่',
+    cancelButtonText: 'ยกเลิก',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`/admin/delete-csv/${filename}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            if (result.success) {
+              document.getElementById(`row-${filename}`).remove();
+              showAlert(result.alertMessage);
+            } else {
+              Swal.fire('เกิดข้อผิดพลาด', 'เกิดข้อผิดพลาดในการลบไฟล์.', 'error');
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            Swal.fire('เกิดข้อผิดพลาด', 'เกิดข้อผิดพลาดในการลบไฟล์.', 'error');
+          });
+      }
+    });
+  }
+
+  function showAlert(message, type = "success") {
+    const alertBox = document.getElementById("alert");
+    alertBox.style.display = "block";
+    alertBox.className = `alert alert-${type} mt-3`;
+    alertBox.innerText = message;
+    setTimeout(() => {
+      alertBox.style.display = "none";
+    }, 3000);
+  }
+
+  function openEditModal(filename) {
+    document.getElementById("editForm").action = `/admin/edit/${filename}`;
+    document.getElementById("editForm").onsubmit = function (event) {
+      event.preventDefault();
+      const newFilename = document.getElementById("newFilename").value;
+      fetch(`/admin/edit-csv/${filename}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          oldFilename: filename,
+          newFilename: newFilename,
+        }),
+      })
+        .then((response) => response.json())
+        .then((result) => {
+          if (result.success) {
+            $("#editModal").modal("hide");
+            showAlert(result.message, "success");
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            showAlert(result.message || "เกิดข้อผิดพลาดในการแก้ไขไฟล์.", "danger");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("เกิดข้อผิดพลาดในการแก้ไขไฟล์.", "danger");
+        });
+    };
+
+    document.getElementById("newFilename").addEventListener("input", function() {
+      this.value = this.value.replace(/\s+/g, '_');
+    });
+
+    $("#editModal").modal("show");
+  }
+
+  function showPreview() {
+    document.getElementById("previewSection").style.display = "block";
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const csvTable = document.getElementById("csvTable");
+    const csvHeader = document.getElementById("csvHeader");
+    const csvBody = document.getElementById("csvBody");
+
+    document
+      .querySelector('input[type="file"]')
+      .addEventListener("change", () => {
+        const file = document.querySelector('input[type="file"]').files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const text = event.target.result;
+            const rows = text.split("\n").map((row) => row.split(","));
+            csvHeader.innerHTML = "";
+            csvBody.innerHTML = "";
+
+            if (rows.length) {
+              // Add headers
+              const headers = rows[0];
+              headers.forEach((header) => {
+                const th = document.createElement("th");
+                th.textContent = header.trim();
+                csvHeader.appendChild(th);
+              });
+
+              // Add rows
+              rows.slice(1, 11).forEach((row) => {
+                const tr = document.createElement("tr");
+                row.forEach((cell) => {
+                  const td = document.createElement("td");
+                  td.textContent = cell.trim();
+                  tr.appendChild(td);
+                });
+                csvBody.appendChild(tr);
+              });
+
+              if (rows.length > 11) {
+                const remainingRows = rows.slice(11);
+                const showMoreTr = document.createElement("tr");
+                const showMoreTd = document.createElement("td");
+                showMoreTd.colSpan = headers.length;
+                showMoreTd.innerHTML = `<button class="btn btn-link" id="showMoreBtn">แสดงเพิ่มเติม...</button>`;
+                showMoreTr.appendChild(showMoreTd);
+                csvBody.appendChild(showMoreTr);
+
+                document
+                  .getElementById("showMoreBtn")
+                  .addEventListener("click", () => {
+                    remainingRows.forEach((row) => {
+                      const tr = document.createElement("tr");
+                      row.forEach((cell) => {
+                        const td = document.createElement("td");
+                        td.textContent = cell.trim();
+                        tr.appendChild(td);
+                      });
+                      csvBody.appendChild(tr);
+                    });
+                    showMoreTr.remove();
+                  });
+              }
+            }
+          };
+          reader.readAsText(file);
+        }
+      });
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>

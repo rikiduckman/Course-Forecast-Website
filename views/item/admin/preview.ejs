@@ -1,0 +1,54 @@
+<style>
+  body {
+    font-family: "Itim", sans-serif;
+  }
+</style>
+
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">เเสดงข้อมูล</h3>
+    <button onclick="window.history.back();" class="btn btn-dark">
+      <i class="fa-solid fa-backward"></i>ย้อนกลับ
+    </button>
+  </div>
+  <hr />
+  <% if (data && data.length> 0) { %>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <% Object.keys(data[0].toObject()).forEach((key)=> { %> 
+              <% if (key !=='_id' && key !=='uploadedAt' && key !=='__v' && key !=='no' ) { %>
+              <th>
+                <%= 
+                  key === 'studentId' ? 'รหัสนักศึกษา' : 
+                  key === 'gender' ? 'เพศ' : 
+                  key === 'education' ? 'วุฒิการศึกษา' : 
+                  key === 'grade1' ? 'รายวิชาวิทยาการคอมพิวเตอร์และเทคโนโลยีสารสนเทศเบื้องต้น' : 
+                  key === 'grade2' ? 'รายวิชาหลักการเขียนโปรแกรมคอมพิวเตอร์' : 
+                  key === 'grade3' ? 'รายวิชาระเบียบวิธีการเขียนโปรแกรม' : key %>
+              </th>
+              <% } %>
+            <% }) %>
+          </tr>
+        </thead>
+        <tbody>
+          <% data.forEach((item)=> { %>
+            <tr>
+              <% Object.entries(item.toObject()).forEach(([key, value])=> { %> <% if (key !=='_id' && key
+                  !=='uploadedAt' && key !=='__v' && key !=='no' ) { %>
+                  <!-- Exclude _id, uploadedAt, __v -->
+                  <td>
+                    <%= value %>
+                  </td>
+                  <% } %>
+                    <% }) %>
+            </tr>
+            <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } else { %>
+      <div class="alert alert-warning" role="alert">No data available.</div>
+      <% } %>
+</div>

@@ -1,0 +1,94 @@
+body {
+    font-family: "Itim", sans-serif;
+    background-color: #fafafa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container-home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 0 15px;
+    text-align: center;
+    background-color: #f4f9ff;
+}
+
+.logo-container-home {
+    transition: transform 0.3s ease;
+}
+
+.logo-home {
+    max-width: 300px;
+}
+
+.logo-container-home:hover {
+    transform: scale(1.05);
+}
+
+.content-title-home {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #444;
+    margin-bottom: 30px;
+    line-height: 1.4;
+    letter-spacing: 1px;
+}
+
+.container-login-home {
+    padding: 15px 30px;
+    font-size: 1.125rem;
+    font-weight: 500;
+    border-radius: 6px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.login-button-home {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    width: 100%;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    display: inline-block;
+}
+
+.login-button-home:hover {
+    background-color: #0056b3;
+}
+
+.note-home {
+    margin-top: 20px;
+    font-size: 0.875rem;
+    color: #777;
+    line-height: 1.4;
+    font-weight: 400;
+}
+
+i {
+    margin-right: 10px;
+}
+
+@media (max-width: 768px) {
+    .content-title-home {
+        font-size: 1.2rem;
+    }
+
+    .logo-home {
+        max-width: 150px;
+    }
+}
+div:where(.swal2-container) h2:where(.swal2-title) {
+    font-size: 1.75em !important;
+    font-weight: 200 !;
+}

@@ -1,0 +1,155 @@
+<!-- <style>
+  body {
+    font-family: "Itim", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f1f1f1;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  h3 {
+    color: #343a40;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .list-group-item {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .list-group-item p {
+    text-overflow: ellipsis;
+    max-width: 500px;
+  }
+
+  .btn-delete {
+    background-color: #cf0202;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .btn-delete:hover {
+    background-color: #630101;
+  }
+
+  .col.text-right {
+    text-align: right;
+    margin-top: 20px;
+  }
+</style>
+<div class="container">
+  <h3>Student Comments</h3>
+  <ul class="list-group" id="commentsList"></ul>
+  <span id="noCommentsMessage" style="display: none; text-align: center; color: #6c757d; opacity: 0.5;">No Comments</span>
+  <button
+    onclick="window.location.href='/admin';"
+    class="btn btn-sm btn-dark float-right"
+  >
+    <i class="fa-solid fa-backward"></i>Back
+  </button>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/admin/getComments")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          const commentsList = document.getElementById("commentsList");
+          const noCommentsMessage = document.getElementById("noCommentsMessage");
+
+          if (data.comments.length === 0) {
+            noCommentsMessage.style.display = "block";
+          } else {
+            noCommentsMessage.style.display = "none";
+            data.comments.forEach((comment) => {
+              let studentId = comment.studentId.trim();
+              
+              studentId = studentId.replace(/-+/g, '-');
+              const listItem = document.createElement("li");
+              listItem.classList.add("list-group-item");
+              listItem.innerHTML = `
+                <div>
+                  <p>${comment.comment}</p>
+                  <small>Student ID: ${studentId}</small><br>
+                  <small>Date: ${new Date(comment.date).toLocaleString()}</small>
+                </div>
+                <button class="btn-delete" onclick="deleteComment('${comment._id}')">
+                  <i class="fa-solid fa-trash"></i>Delete
+                </button>
+              `;
+              commentsList.appendChild(listItem);
+            });
+          }
+        } else {
+          console.error("Error fetching comments:", data.message);
+        }
+      })
+      .catch((error) => console.error("Error:", error));
+  });
+
+  function deleteComment(commentId) {
+    Swal.fire({
+      title: 'Do you want to delete this comment?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: 'red',
+      cancelButtonColor: 'gray',
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'Cancel',
+    }).then((result) => {
+      if (result.isConfirmed) {
+      fetch(`/admin/deleteComment/${commentId}`, {
+        method: "DELETE",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+        if (data.success) {
+          Swal.fire(
+          'Deleted!',
+          'The comment has been deleted.',
+          'success'
+          ).then(() => {
+          location.reload();
+          });
+        } else {
+          Swal.fire(
+          'Error',
+          'An error occurred while deleting the comment.',
+          'error'
+          );
+        }
+        })
+        .catch((error) => {
+        console.error("Error:", error);
+        Swal.fire(
+          'Error',
+          'An error occurred while deleting the comment.',
+          'error'
+            );
+          });
+      }
+    });
+  }
+</script> -->

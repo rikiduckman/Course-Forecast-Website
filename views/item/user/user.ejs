@@ -1,0 +1,501 @@
+<style>
+  body {
+    font-family: "Itim", sans-serif;
+    font-size: 18px;
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  #prediction-result {
+    color: green;
+    width: 50%;
+    margin: 20px auto;
+    text-align: center;
+  }
+
+  #accuracy-result,
+  #f1-score-result,
+  #precision-result,
+  #recall-result {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    position: relative;
+  }
+
+  [data-tooltip] {
+    position: relative;
+    cursor: pointer;
+  }
+
+  [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #636363;
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  [data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #loadingPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 30px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 9999;
+  }
+
+  #loadingPopup .spinner-border {
+    margin-bottom: 10px;
+  }
+
+  .btn-disabled {
+    background-color: gray;
+    border-color: gray;
+    cursor: not-allowed;
+    opacity: 0.3 !important;
+    color: rgb(0, 0, 0) !important;
+  }
+</style>
+
+<div class="container">
+  <div class="row">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="text-center">
+          ระบบแนะนำการเลือกศึกษาหลักสูตรระดับปริญญาตรีสาขาวิชาวิทยาการคอมพิวเตอร์ ด้วยเทคนิคโครงข่ายประสาทเทียม
+        </h5>
+      </div>
+      <div class="card-body">
+        <p><strong>ชื่อ:</strong>
+          <%= user.displayName %>
+        </p>
+
+        <p id="userEmail">
+          <strong>รหัสนักศึกษา:</strong> <span id="studentId"></span>
+            <%= user.emails[0].value.split('@')[0].slice(0, 11) + "-" + user.emails[0].value.split('@')[0].slice(11) %>
+          </span>
+        </p>
+
+        <p>
+          <strong>เพศ:</strong>
+          <% if (user.gender==="Not found" ) { %>
+            <select id="genderSelect">
+              <option value="" selected>เลือก</option>
+              <option value="Male">ชาย</option>
+              <option value="Female">หญิง</option>
+            </select>
+            <% } else { %>
+              <%= user.gender %>
+                <% } %>
+        </p>
+
+        <p>
+          <strong>วุฒิก่อนเข้าศึกษา:</strong>
+          <% if (user.education==="Not found" ) { %>
+            <select id="educationSelect">
+              <option value="" selected>เลือก</option>
+              <option value="Grade12">ม.6</option>
+              <option value="Vocational">ปวช</option>
+              <option value="Other">อื่นๆ</option>
+            </select>
+            <% } else { %>
+              <%= user.education %>
+                <% } %>
+        </p>
+
+        <hr />
+
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>ชื่อหลักสูตร</th>
+              <th>ผลการศึกษา</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>รายวิชาวิทยาการคอมพิวเตอร์และเทคโนโลยีสารสนเทศเบื้องต้น</td>
+              <td>
+                <% if (student && student.grade1 && student.grade1 !=="Not found" ) { %>
+                  <%= student.grade1 %>
+                    <% } else { %>
+                      <select id="grade1Select">
+                        <option value="" selected>เลือก</option>
+                        <option value="A">A</option>
+                        <option value="B+">B+</option>
+                        <option value="B">B</option>
+                        <option value="C+">C+</option>
+                        <option value="C">C</option>
+                        <option value="D+">D+</option>
+                        <option value="D">D</option>
+                        <option value="F">F</option>
+                        <option value="W">W</option>
+                      </select>
+                      <% } %>
+              </td>
+            </tr>
+            <tr>
+              <td>รายวิชาหลักการเขียนโปรแกรมคอมพิวเตอร์</td>
+              <td>
+                <% if (student && student.grade2 && student.grade2 !=="Not found" ) { %>
+                  <%= student.grade2 %>
+                    <% } else { %>
+                      <select id="grade2Select">
+                        <option value="" selected>เลือก</option>
+                        <option value="A">A</option>
+                        <option value="B+">B+</option>
+                        <option value="B">B</option>
+                        <option value="C+">C+</option>
+                        <option value="C">C</option>
+                        <option value="D+">D+</option>
+                        <option value="D">D</option>
+                        <option value="F">F</option>
+                        <option value="W">W</option>
+                      </select>
+                      <% } %>
+              </td>
+            </tr>
+            <tr>
+              <td>รายวิชาระเบียบวิธีการเขียนโปรแกรม</td>
+              <td>
+                <% if (student && student.grade3 && student.grade3 !=="Not found" ) { %>
+                  <%= student.grade3 %>
+                    <% } else { %>
+                      <select id="grade3Select">
+                        <option value="" selected>เลือก</option>
+                        <option value="A">A</option>
+                        <option value="B+">B+</option>
+                        <option value="B">B</option>
+                        <option value="C+">C+</option>
+                        <option value="C">C</option>
+                        <option value="D+">D+</option>
+                        <option value="D">D</option>
+                        <option value="F">F</option>
+                        <option value="W">W</option>
+                      </select>
+                      <% } %>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <% if (!student) { %>
+          <div class="alert alert-warning" role="alert">ไม่พบข้อมูลในระบบ</div>
+        <% } %>
+
+        <div class="d-flex justify-content-between">
+          <button type="button" class="btn btn-primary btn-disabled" id="trainModel" disabled>
+            <i class="fa-solid fa-share"></i>แนะนำการเลือกหลักสูตร
+          </button>
+          <a class="btn btn-danger"><i class="fa-solid fa-right-from-bracket"></i>ออกจากระบบ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="loadingPopup">
+  <div class="spinner-border text-light" role="status">
+    <span class="sr-only">กำลังโหลด...</span>
+  </div>
+  <p>กำลังประมวลผล...</p>
+</div>
+
+<div class="modal fade" id="forecastModal" tabindex="-1" role="dialog" aria-labelledby="forecastModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="forecastModalLabel">
+          ผลลัพธ์การพยากรณ์หลักสูตร
+        </h5>
+      </div>
+      <div class="modal-body">
+        <h6>รายละเอียดโมเดล</h6>
+        <div id="accuracy-result" data-tooltip="Model accuracy in prediction"></div>
+        <div id="f1-score-result" data-tooltip="Balance measurement between Precision and Recall"></div>
+        <div id="precision-result" data-tooltip="Accuracy of positive predictions"></div>
+        <div id="recall-result" data-tooltip="Ability to capture true positive cases"></div>
+        <div id="prediction-result" style="margin-top: 20px"></div>
+
+        <div id="comment-section" style="margin-top: 20px">
+            <button type="button"  id="submitComment" style="color: white; opacity: 0.0"></button>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="closeModalBtn" data-dismiss="modal">
+          ปิด
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  $(document).ready(function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const loginSuccess = urlParams.get('login');
+    const unauthorized = urlParams.get('unauthorized');
+
+    if (loginSuccess === 'success') {
+      Swal.fire({
+        title: "เข้าสู่ระบบสำเร็จ",
+        text: "ยินดีต้อนรับสู่หน้าผู้ใช้",
+        icon: "success",
+        confirmButtonText: "ตกลง"
+      }).then(() => {
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      });
+    }
+
+    if (unauthorized === 'true') {
+      Swal.fire({
+        title: "การเข้าถึงถูกปฏิเสธ",
+        text: "คุณไม่มีสิทธิ์เข้าถึงหน้านี้",
+        icon: "error",
+        confirmButtonText: "ตกลง"
+      }).then(() => {
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      });
+    }
+
+    const studentIdElement = document.getElementById("studentId");
+    let studentId = studentIdElement.textContent.trim();
+    if (studentId.length === 12) {
+      studentId = studentId.slice(0, 11) + "-" + studentId.slice(11);
+    }
+
+    studentIdElement.textContent = studentId;
+
+    function checkSelectValues() {
+      const genderSelect = document.getElementById("genderSelect");
+      const educationSelect = document.getElementById("educationSelect");
+      const grade1Select = document.getElementById("grade1Select");
+      const grade2Select = document.getElementById("grade2Select");
+      const grade3Select = document.getElementById("grade3Select");
+
+      const allSelected = (
+      (!genderSelect || genderSelect.value) &&
+      (!educationSelect || educationSelect.value) &&
+      (!grade1Select || grade1Select.value) &&
+      (!grade2Select || grade2Select.value) &&
+      (!grade3Select || grade3Select.value)
+      );
+
+      const trainModelButton = document.getElementById("trainModel");
+      trainModelButton.disabled = !allSelected;
+      if (allSelected) {
+      trainModelButton.classList.remove("btn-disabled");
+      trainModelButton.style.backgroundColor = "#007bff"; 
+      trainModelButton.style.borderColor = "#007bff";
+      } else {
+      trainModelButton.classList.add("btn-disabled");
+      trainModelButton.style.backgroundColor = "gray"; 
+      trainModelButton.style.borderColor = "gray";
+      }
+    }
+
+    const selects = document.querySelectorAll("select");
+    selects.forEach(select => {
+      select.addEventListener("change", checkSelectValues);
+    });
+
+    checkSelectValues();
+  });
+
+  function showLoading() {
+    document.getElementById("loadingPopup").style.display = "block";
+  }
+
+  function hideLoading() {
+    document.getElementById("loadingPopup").style.display = "none";
+  }
+
+  document.querySelector("a.btn-danger").addEventListener("click", function (event) {
+    event.preventDefault();
+    Swal.fire({
+      title: 'ยืนยันการออกจากระบบ',
+      text: "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: 'Red',
+      cancelButtonColor: 'Gray',
+      confirmButtonText: 'ออกจากระบบ',
+      cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = '/logout';
+      }
+    });
+  });
+
+  document.getElementById("trainModel").addEventListener("click", function () {
+    showLoading();
+
+    const gender = document.getElementById("genderSelect")
+      ? document.getElementById("genderSelect").value
+      : "<%= user.gender %>";
+    const education = document.getElementById("educationSelect")
+      ? document.getElementById("educationSelect").value
+      : "<%= user.education %>";
+    const grade1 = document.getElementById("grade1Select")
+      ? document.getElementById("grade1Select").value
+      : "<%= student ? student.grade1 || 'Not found' : 'Not found' %>";
+    const grade2 = document.getElementById("grade2Select")
+      ? document.getElementById("grade2Select").value
+      : "<%= student ? student.grade2 || 'Not found' : 'Not found' %>";
+    const grade3 = document.getElementById("grade3Select")
+      ? document.getElementById("grade3Select").value
+      : "<%= student ? student.grade3 || 'Not found' : 'Not found' %>";
+
+    const userData = { gender, education, grade1, grade2, grade3 };
+
+    const missingData = Object.values(userData).some((value) => value === "Not found");
+
+if (missingData) {
+  Swal.fire({
+    icon: 'error',
+    title: 'ไม่สามารถพยากรณ์แนะนำการเลือกหลักสูตรได้',
+    text: 'เนื่องจากข้อมูลไม่ครบถ้วน'
+  });
+  hideLoading();
+  return;
+}
+
+const modelFilename = localStorage.getItem("activeModel");
+
+if (!modelFilename) {
+  Swal.fire({
+    icon: 'error',
+    title: 'ไม่สามารถพยากรณ์แนะนำการเลือกหลักสูตรได้',
+    text: 'เนื่องจากไม่มีการเลือกโมเดล',
+    confirmButtonText: 'ปิด'
+  });
+  hideLoading();
+  return;
+}
+
+    fetch("/user/trainModel", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ modelFilename, ...userData }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        hideLoading();
+        if (data.success) {
+          document.getElementById("accuracy-result").innerText = `Accuracy: ${data.accuracy}`;
+          document.getElementById("f1-score-result").innerText = `F1-Score: ${data.f1Score}`;
+          document.getElementById("precision-result").innerText = `Precision: ${data.precision}`;
+          document.getElementById("recall-result").innerText = `Recall: ${data.recall}`;
+          document.getElementById("prediction-result").innerText = `ผลลัพธ์การพยากรณ์เเนะนำการเลือกหลักสูตรที่ควรศึกษาต่อคือ:${data.prediction}`;
+
+          $("#forecastModal").modal("show");
+        } else {
+          document.getElementById("accuracy-result").innerText = `ข้อผิดพลาด: ${data.message}`;
+          document.getElementById("f1-score-result").innerText = `ข้อผิดพลาด: ${data.message}`;
+          document.getElementById("precision-result").innerText = `ข้อผิดพลาด: ${data.message}`;
+          document.getElementById("recall-result").innerText = `ข้อผิดพลาด: ${data.message}`;
+          document.getElementById("prediction-result").innerText = `ข้อผิดพลาด: ${data.message}`;
+          $("#forecastModal").modal("show");
+        }
+      })
+      .catch((error) => {
+        hideLoading(); 
+        console.error("Error:", error);
+        document.getElementById("accuracy-result").innerText = "เกิดข้อผิดพลาดขณะฝึกโมเดล";
+        $("#forecastModal").modal("show");
+      });
+  });
+
+  document.getElementById("submitComment").addEventListener("click", function (event) {
+    event.preventDefault(); 
+
+    const comment = document.getElementById("user-comment").value;
+    let studentId = document.getElementById("studentId").textContent.trim(); 
+
+    // Ensure studentId has only one hyphen
+    studentId = studentId.replace(/-+/g, '-');
+
+    if (comment.trim()) {
+      fetch("/user/submitComment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ comment, studentId }), 
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'ความคิดเห็นของคุณถูกส่งแล้ว',
+          text: 'ขอบคุณ!',
+          confirmButtonText: 'ตกลง'
+        });
+        document.getElementById("user-comment").value = "";
+        } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'ข้อผิดพลาด',
+          text: 'ไม่สามารถส่งความคิดเห็นได้ กรุณาลองใหม่',
+          confirmButtonText: 'ตกลง'
+        });
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        Swal.fire({
+        icon: 'error',
+        title: 'ข้อผิดพลาด',
+        text: 'ไม่สามารถส่งความคิดเห็นได้ กรุณาลองใหม่',
+        confirmButtonText: 'ตกลง'
+        });
+      });
+    } else {
+      Swal.fire({
+      icon: 'warning',
+      title: 'กรุณาใส่ความคิดเห็น',
+      text: 'ก่อนส่ง',
+      confirmButtonText: 'ตกลง'
+      });
+    }
+    });
+
+  document.getElementById("closeModalBtn").addEventListener("click", function () {
+    $("#forecastModal").modal("hide");
+  });
+</script>
